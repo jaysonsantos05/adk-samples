@@ -1,23 +1,29 @@
-name: Trustabl Scan
+name: Trustabl
 
 on:
+  workflow_dispatch:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [main, master]
+
+permissions:
+  contents: read
+  # security-events only needed if upload-sarif is flipped to true on a job below
+  security-events: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write   # required for upload-sarif
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Scan with Trustabl
-        uses: trustabl/actions@v1
+      - id: trustabl
+        uses: trustabl/actions@v0.1.2
         with:
-          upload-artifact: true
-          json-file: trustabl.json
+          target: "."
+      - name: Echo outputs
+        run: |
+          echo "exit-code      = ${{ steps.trustabl.outputs.exit-code }}"
+          echo "overall-score  = ${{ steps.trustabl.outputs.overall-score }}"
+          echo "risk-score     = ${{ steps.trustabl.outputs.risk-score }}"
+          echo "max-severity   = ${{ steps.trustabl.outputs.max-severity }}"
+          echo "findings-count = ${{ steps.trustabl.outputs.findings-count }}"
+          ls -la trustabl.sarif trustabl.json
