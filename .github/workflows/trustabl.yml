@@ -1,0 +1,23 @@
+name: Trustabl Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # required for upload-sarif
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan with Trustabl
+        uses: trustabl/actions@v1
+        with:
+          upload-artifact: true
+          json-file: trustabl.json
