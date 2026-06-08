@@ -23,6 +23,7 @@ jobs:
           anthropic-key: ${{ secrets.ANTHROPIC_API_KEY }}
           auto-fix: true
           create-fix-pr: true
+          enrich-rules: "ADK-201"
       - name: Echo outputs
         run: |
           echo "exit-code      = ${{ steps.trustabl.outputs.exit-code }}"
