@@ -6,8 +6,8 @@ on:
     branches: [main, master]
 
 permissions:
-  contents: read
-  # security-events only needed if upload-sarif is flipped to true on a job below
+  contents: write
+  pull-requests: write
   security-events: write
 
 jobs:
@@ -16,14 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: trustabl
-        uses: trustabl/actions@v0.1.2
+        uses: trustabl/trustabl-action@feat/enrich
         with:
           target: "."
+          enrich: true
+          anthropic-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          auto-fix: true
+          create-fix-pr: true
       - name: Echo outputs
         run: |
           echo "exit-code      = ${{ steps.trustabl.outputs.exit-code }}"
-          echo "overall-score  = ${{ steps.trustabl.outputs.overall-score }}"
+          echo "readiness-score = ${{ steps.trustabl.outputs.readiness-score }}"
           echo "risk-score     = ${{ steps.trustabl.outputs.risk-score }}"
           echo "max-severity   = ${{ steps.trustabl.outputs.max-severity }}"
           echo "findings-count = ${{ steps.trustabl.outputs.findings-count }}"
+          echo "fix-pr-url     = ${{ steps.trustabl.outputs.fix-pr-url }}"
           ls -la trustabl.sarif trustabl.json
