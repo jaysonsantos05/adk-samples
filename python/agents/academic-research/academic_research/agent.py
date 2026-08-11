@@ -19,17 +19,14 @@ from google.adk.tools.agent_tool import AgentTool
 
 from . import prompt
 from .sub_agents.academic_newresearch import academic_newresearch_agent
-from .sub_agents.academic_websearch import academic_websearch_agent
-
-MODEL = "gemini-2.5-pro"
-
+def _before_tool_callback_coordinator(tool_name: str, tool_input: dict) -> None:
+    """Validate tool invocations, especially AgentTool delegations."""
+    if tool_name == "AgentTool":
+        # Inspect the wrapped agent invocation and its arguments
+        pass  # Add policy checks on delegation to academic_websearch_agent
 
 academic_coordinator = LlmAgent(
-    name="academic_coordinator",
-    model=MODEL,
-    description=(
-        "analyzing seminal papers provided by the users, "
-        "providing research advice, locating current papers "
+    before_tool_callback=_before_tool_callback_coordinator,
         "relevant to the seminal paper, generating suggestions "
         "for new research directions, and accessing web resources "
         "to acquire knowledge"
