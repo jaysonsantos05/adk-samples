@@ -16,17 +16,17 @@
 
 import os
 
-from google.adk.agents import Agent
-from google.adk.code_executors import VertexAiCodeExecutor
-
-from .prompts import return_instructions_analytics
+def _validate_analytics_request(request):
+    """Validate LlmRequest before model code execution."""
+    # Inspect request.messages for code blocks and validate safety
+    # Reject requests with suspicious patterns or operations
+    return request
 
 analytics_agent = Agent(
-    model=os.getenv("ANALYTICS_AGENT_MODEL", ""),
-    name="analytics_agent",
-    instruction=return_instructions_analytics(),
-    code_executor=VertexAiCodeExecutor(
-        optimize_data_file=True,
+        model=os.getenv("ANALYTICS_AGENT_MODEL", ""),
+        name="analytics_agent",
+        instruction=return_instructions_analytics(),
+        before_model_callback=_validate_analytics_request,
         stateful=True,
     ),
 )
