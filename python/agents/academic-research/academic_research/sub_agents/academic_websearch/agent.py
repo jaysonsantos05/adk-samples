@@ -17,10 +17,15 @@
 from google.adk import Agent
 from google.adk.tools import google_search
 
-from . import prompt
-
-MODEL = "gemini-2.5-pro"
-
+def _validate_search_before_tool(tool_name, tool_input):
+    """Validate search queries before execution to prevent prompt injection."""
+    if tool_name == "google_search":
+        query = tool_input.get("query", "")
+        # Block queries containing suspicious patterns
+        suspicious_patterns = ["ignore", "forget", "instead", "override", "new instruction"]
+        if any(pattern in query.lower() for pattern in suspicious_patterns):
+            return {"error": "Query contains suspicious injection patterns"}
+    return None
 
 academic_websearch_agent = Agent(
     model=MODEL,
@@ -28,4 +33,5 @@ academic_websearch_agent = Agent(
     instruction=prompt.ACADEMIC_WEBSEARCH_PROMPT,
     output_key="recent_citing_papers",
     tools=[google_search],
+    before_tool_callback=_validate_search_before_tool,
 )
