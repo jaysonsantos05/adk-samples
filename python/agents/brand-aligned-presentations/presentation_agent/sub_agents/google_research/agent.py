@@ -21,17 +21,23 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.adk.tools import FunctionTool, google_search
 from google.genai import types
+def validate_search_query(tool_name: str, tool_input: dict) -> dict:
+    """Validate search queries to prevent injection attacks."""
+    if tool_name == "google_search" and "query" in tool_input:
+        query = tool_input["query"]
+        # Block queries containing suspicious patterns
+        suspicious_patterns = ["ignore", "forget", "override", "execute", "system"]
+        if any(pattern in query.lower() for pattern in suspicious_patterns):
+            return {"error": f"Query blocked due to suspicious content: {query}"}
+    return {}
 
-from ...shared_libraries.config import ROOT_MODEL
-from .prompt import GOOGLE_RESEARCH_INSTRUCTION
-
-# 1. Define the core specialist agent
 research_agent = LlmAgent(
-    model=ROOT_MODEL,
-    name="research_specialist",
-    description="Gather high-impact facts and statistics using Google Search.",
-    instruction=GOOGLE_RESEARCH_INSTRUCTION,
-    tools=[google_search],
+        model=ROOT_MODEL,
+        name="research_specialist",
+        description="Gather high-impact facts and statistics using Google Search.",
+        instruction=GOOGLE_RESEARCH_INSTRUCTION,
+        tools=[google_search],
+        before_tool_callback=validate_search_query,
 )
 
 
