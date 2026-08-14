@@ -21,6 +21,16 @@ from google.adk.tools.google_search_tool import google_search
 from ..config import config
 from . import prompts
 
+def _search_callback(tool_name: str, params: dict) -> dict:
+    """Blocks suspicious Google search queries to prevent prompt injection."""
+    if tool_name == "google_search":
+        query = params.get("query", "")
+        # Reject queries containing common injection phrases or overly complex instructions
+        if any(phrase in query.lower() for phrase in ["ignore previous", "assume role", "output raw", "system prompt"]):
+            return {"error": "suspicious query pattern detected"}
+    return {"ok": True}
+
+
 _search_agent = Agent(
     model=config.model_name,
     name="google_search_grounding",
