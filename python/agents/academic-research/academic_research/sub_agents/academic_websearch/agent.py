@@ -23,9 +23,11 @@ MODEL = "gemini-2.5-pro"
 
 
 academic_websearch_agent = Agent(
-    model=MODEL,
-    name="academic_websearch_agent",
-    instruction=prompt.ACADEMIC_WEBSEARCH_PROMPT,
-    output_key="recent_citing_papers",
-    tools=[google_search],
+        model=MODEL,
+        name="academic_websearch_agent",
+        instruction=prompt.ACADEMIC_WEBSEARCH_PROMPT,
+        output_key="recent_citing_papers",
+        tools=[google_search],
+        before_tool_callback=lambda tool_name, params: (params if tool_name != 'google_search' or 'search_query' not in params or len(params['search_query']) < 5 or len(params['search_query']) > 200 or not re.match(r'^[\w\s\'\"\(\)\-\+\.\*\:]+$', params['search_query']) else params) if tool_name != 'google_search' else ({'error': 'Invalid or suspicious search query detected'} if tool_name == 'google_search' and ('search_query' not in params or len(params['search_query']) < 5 or len(params['search_query']) > 200 or not re.match(r'^[\w\s\'\"\(\)\-\+\.\*\:]+$', params['search_query'])) else params),
+        safety_settings=[{'category': 'HARM_CATEGORY_HATE_SPEECH', 'threshold': 'BLOCK_MEDIUM_AND_ABOVE'}, {'category': 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold': 'BLOCK_MEDIUM_AND_ABOVE'}],
 )
