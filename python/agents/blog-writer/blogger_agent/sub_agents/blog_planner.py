@@ -20,6 +20,11 @@ from ..config import config
 from ..validation_checkers import OutlineValidationChecker
 
 blog_planner = Agent(
+        before_tool_callback=lambda tool_name, params: (
+            {'error': 'Web search blocked: invalid query'}
+            if tool_name == 'google_search' and not isinstance(params.get('query'), str)
+            else None
+        ),
     model=config.worker_model,
     name="blog_planner",
     description="Generates a blog post outline.",
