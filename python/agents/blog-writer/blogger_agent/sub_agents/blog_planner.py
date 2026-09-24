@@ -20,6 +20,7 @@ from ..config import config
 from ..validation_checkers import OutlineValidationChecker
 
 blog_planner = Agent(
+    before_tool_callback=lambda tool_name, params: {"error": "Blocked suspicious query"} if tool_name == "google_search" and not _is_safe_query(params.get("query", "")) else None,
     model=config.worker_model,
     name="blog_planner",
     description="Generates a blog post outline.",
